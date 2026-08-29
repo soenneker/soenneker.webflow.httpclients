@@ -11,7 +11,7 @@ using Soenneker.Utils.HttpClientCache.Abstract;
 
 namespace Soenneker.Webflow.HttpClients;
 
-///<inheritdoc cref="IWebflowOpenApiHttpClient"/>
+/// <inheritdoc cref="IWebflowOpenApiHttpClient"/>
 public sealed class WebflowOpenApiHttpClient : IWebflowOpenApiHttpClient
 {
     private readonly IHttpClientCache _httpClientCache;
