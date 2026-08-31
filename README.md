@@ -1,43 +1,61 @@
 [![](https://img.shields.io/nuget/v/soenneker.webflow.httpclients.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.webflow.httpclients/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.webflow.httpclients/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.webflow.httpclients/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.webflow.httpclients.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.webflow.httpclients/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.webflow.httpclients/codeql.yml?style=for-the-badge&label=CodeQL)](https://github.com/soenneker/soenneker.webflow.httpclients/actions/workflows/codeql.yml)
 
 # Soenneker.Webflow.HttpClients
 
-A .NET thread-safe singleton HttpClient for.
+Provides a cached `HttpClient` configured for the Webflow Data API v2 with Bearer-token authentication.
 
-## Install
+## Installation
 
 ```bash
 dotnet add package Soenneker.Webflow.HttpClients
 ```
 
-## Quick start
+## Configuration
+
+```json
+{
+  "Webflow": {
+    "AccessToken": "your-webflow-access-token"
+  }
+}
+```
+
+The token may be a site token or an OAuth access token, but it must include the scopes required by the endpoints being called.
+
+## Registration
 
 ```csharp
 using Soenneker.Webflow.HttpClients.Registrars;
-using Microsoft.Extensions.DependencyInjection;
 
-var services = new ServiceCollection();
-var result = services.AddWebflowOpenApiHttpClientAsSingleton();
+services.AddWebflowOpenApiHttpClientAsSingleton();
 ```
 
-Adds `WebflowOpenApiHttpClient` as a singleton service.
+Scoped registration is available through `AddWebflowOpenApiHttpClientAsScoped()`. Each provider instance owns a separate cached client and removes only that client when disposed.
 
-## What you get
+## Usage
 
-- `IWebflowOpenApiHttpClient` — A .NET thread-safe singleton HttpClient for.
-- `WebflowOpenApiHttpClientRegistrar` — Registers the OpenAPI HttpClient wrapper for dependency injection.
+```csharp
+using Soenneker.Webflow.HttpClients.Abstract;
 
-## API at a glance
+public sealed class SiteReader
+{
+    private readonly IWebflowOpenApiHttpClient _clients;
 
-| API | What it does | Result / important behavior |
-| --- | --- | --- |
-| `WebflowOpenApiHttpClientRegistrar.AddWebflowOpenApiHttpClientAsSingleton(services)` | Adds `WebflowOpenApiHttpClient` as a singleton service. | The same service collection, so additional registrations can be chained. |
-| `WebflowOpenApiHttpClientRegistrar.AddWebflowOpenApiHttpClientAsScoped(services)` | Adds `WebflowOpenApiHttpClient` as a scoped service. | The same service collection, so additional registrations can be chained. |
+    public SiteReader(IWebflowOpenApiHttpClient clients)
+    {
+        _clients = clients;
+    }
 
-## Practical notes
+    public async ValueTask<HttpResponseMessage> GetSites(
+        CancellationToken cancellationToken)
+    {
+        HttpClient client = await _clients.Get(cancellationToken);
+        return await client.GetAsync("sites", cancellationToken);
+    }
+}
+```
 
-- Reuse the registered client instead of constructing one per operation.
-- Calls that return a cached or singleton value reuse the same instance until the owning service is disposed.
-- Dispose instances you own when their scope ends so held resources can be released.
+The base address is `https://api.webflow.com/v2/`, and requests include `Authorization: Bearer <AccessToken>` by default. Webflow API errors remain ordinary non-success HTTP responses for the caller to handle.

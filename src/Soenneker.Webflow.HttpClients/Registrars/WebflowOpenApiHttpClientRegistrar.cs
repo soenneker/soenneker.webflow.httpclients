@@ -6,7 +6,7 @@ using Soenneker.Utils.HttpClientCache.Registrar;
 namespace Soenneker.Webflow.HttpClients.Registrars;
 
 /// <summary>
-/// Registers the OpenAPI HttpClient wrapper for dependency injection.
+/// Registers authenticated HTTP clients for the Webflow Data API v2.
 /// </summary>
 public static class WebflowOpenApiHttpClientRegistrar
 {

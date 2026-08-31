@@ -11,13 +11,13 @@ using Soenneker.Utils.HttpClientCache.Abstract;
 
 namespace Soenneker.Webflow.HttpClients;
 
-/// <inheritdoc cref="IWebflowOpenApiHttpClient"/>
 public sealed class WebflowOpenApiHttpClient : IWebflowOpenApiHttpClient
 {
     private readonly IHttpClientCache _httpClientCache;
     private readonly IConfiguration _config;
+    private readonly string _cacheKey = $"{nameof(WebflowOpenApiHttpClient)}:{Guid.NewGuid():N}";
 
-    private const string _prodBaseUrl = "https://api.webflow.com/v2";
+    private const string _prodBaseUrl = "https://api.webflow.com/v2/";
 
     public WebflowOpenApiHttpClient(IHttpClientCache httpClientCache, IConfiguration config)
     {
@@ -27,7 +27,7 @@ public sealed class WebflowOpenApiHttpClient : IWebflowOpenApiHttpClient
 
     public ValueTask<HttpClient> Get(CancellationToken cancellationToken = default)
     {
-        return _httpClientCache.Get(nameof(WebflowOpenApiHttpClient), (config: _config, baseUrl: _config["Webflow:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
+        return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Webflow:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
             var apiKey = state.config.GetValueStrict<string>("Webflow:AccessToken");
             string authHeaderName = state.config["Webflow:AuthHeaderName"] ?? "Authorization";
@@ -47,11 +47,11 @@ public sealed class WebflowOpenApiHttpClient : IWebflowOpenApiHttpClient
 
     public void Dispose()
     {
-        _httpClientCache.RemoveSync(nameof(WebflowOpenApiHttpClient));
+        _httpClientCache.RemoveSync(_cacheKey);
     }
 
     public ValueTask DisposeAsync()
     {
-        return _httpClientCache.Remove(nameof(WebflowOpenApiHttpClient));
+        return _httpClientCache.Remove(_cacheKey);
     }
 }

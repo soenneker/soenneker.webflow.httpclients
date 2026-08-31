@@ -6,14 +6,14 @@ using System.Threading;
 namespace Soenneker.Webflow.HttpClients.Abstract;
 
 /// <summary>
-/// A .NET thread-safe singleton HttpClient for 
+/// Provides an authenticated HTTP client for the Webflow Data API v2.
 /// </summary>
-public interface IWebflowOpenApiHttpClient: IDisposable, IAsyncDisposable
+public interface IWebflowOpenApiHttpClient : IDisposable, IAsyncDisposable
 {
     /// <summary>
-    /// Returns the configured HTTP client used by the Webflow OpenAPI HTTP Client.
+    /// Gets the cached HTTP client, creating it on first use.
     /// </summary>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns>A task whose result is the requested HTTP client.</returns>
+    /// <returns>The authenticated HTTP client.</returns>
     ValueTask<HttpClient> Get(CancellationToken cancellationToken = default);
 }
