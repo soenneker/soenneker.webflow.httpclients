@@ -30,7 +30,7 @@ public sealed class WebflowOpenApiHttpClient : IWebflowOpenApiHttpClient
     {
         return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Webflow:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
-            var apiKey = state.config.GetValueStrict<string>("Webflow:AccessToken");
+            var apiKey = state.config.GetStringStrict("Webflow:AccessToken");
             string authHeaderName = state.config["Webflow:AuthHeaderName"] ?? "Authorization";
             string authHeaderValueTemplate = state.config["Webflow:AuthHeaderValueTemplate"] ?? "Bearer {token}";
             string authHeaderValue = authHeaderValueTemplate.Replace("{token}", apiKey, StringComparison.Ordinal);
